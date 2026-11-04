@@ -196,8 +196,9 @@ struct ButtonCatcher: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let v = UIView()
         let i = AVCaptureEventInteraction(
-            primaryAction: { e in if e.phase == .began { primary() } },
-            secondaryAction: { e in if e.phase == .began { secondary() } })
+        let i = AVCaptureEventInteraction(
+            primary: { e in if e.phase == .began { primary() } },
+            secondary: { e in if e.phase == .began { secondary() } })
         i.isEnabled = true
         v.addInteraction(i)
         return v
