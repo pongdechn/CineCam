@@ -5,20 +5,28 @@ on:
     branches: [main]
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+    working-directory: CineCam-repo
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show repo files
+        run: |
+          { echo "== files =="; ls -la; echo; ls -R Sources || true; } 2>&1 | tee -a build.log
+
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: brew install xcodegen 2>&1 | tee -a build.log
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: xcodegen generate 2>&1 | tee -a build.log
 
       - name: Build (unsigned)
-        shell: bash
         run: |
           xcodebuild \
             -project CineCam.xcodeproj \
@@ -30,7 +38,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            2>&1 | tee build.log
+            2>&1 | tee -a build.log
 
       - name: Package IPA
         run: |
@@ -42,11 +50,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CineCam-ipa
-          path: CineCam.ipa
+          path: CineCam-repo/CineCam.ipa
 
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-log
-          path: build.log
+          path: CineCam-repo/build.log
+          if-no-files-found: warn
